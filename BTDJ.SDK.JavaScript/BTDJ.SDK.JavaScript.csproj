@@ -74,6 +74,8 @@
     <Content Include="source\btdj.js" />
     <Content Include="source\logger.js" />
     <Content Include="source\utils.js" />
+    <Content Include="source\vars\album.js" />
+    <Content Include="source\vars\artist.js" />
     <Content Include="source\vars\genre.js" />
     <Content Include="source\vars\image.js" />
     <Content Include="source\vars\location.js" />

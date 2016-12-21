@@ -1,4 +1,6 @@
 ﻿var Utils = require('../utils');
+var Artist = require('./artist');
+var Album = require('./album');
 var Image = require('./image');
 var Genre = require('./genre');
 var User = require('./user');
@@ -39,7 +41,7 @@ Track.prototype.getTitle = function () {
  * @returns {string} 
  */
 Track.prototype.getArtist = function () {
-    return this.artist;
+    return new Artist(this.artist);
 };
 
 /**
@@ -47,7 +49,7 @@ Track.prototype.getArtist = function () {
  * @returns {string} 
  */
 Track.prototype.getAlbum = function () {
-    return this.album;
+    return new Album(this.album);
 };
 
 /**

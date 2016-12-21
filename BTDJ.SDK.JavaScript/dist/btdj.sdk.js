@@ -276,7 +276,7 @@ exports.checkIn = function (code) {
         }, reject);
     });
 }
-},{"./api/oauth2":3,"./logger":5,"./utils":6,"./vars/location":9,"./vars/offsetObject":10,"./vars/track":11,"./vars/user":12}],2:[function(require,module,exports){
+},{"./api/oauth2":3,"./logger":5,"./utils":6,"./vars/location":11,"./vars/offsetObject":12,"./vars/track":13,"./vars/user":14}],2:[function(require,module,exports){
 var Utils = require('../utils');
 var Logger = require('../logger');
 
@@ -593,7 +593,7 @@ exports.getDefaultAvatarUrl = function () {
 
 exports.OffsetObject = require('./vars/offsetObject');
 exports.Track = require('./vars/track');
-},{"./api":1,"./api/login":2,"./utils":6,"./vars/offsetObject":10,"./vars/track":11}],5:[function(require,module,exports){
+},{"./api":1,"./api/login":2,"./utils":6,"./vars/offsetObject":12,"./vars/track":13}],5:[function(require,module,exports){
 exports.error = function (value) {
     throw new Error(value);
 };
@@ -798,6 +798,121 @@ exports.formatString = function (value, args) {
     return theString;
 };
 },{}],7:[function(require,module,exports){
+var Utils = require('../utils');
+var Artist = require('./artist');
+var Genre = require('./genre');
+var Image = require('./image');
+
+function Album(data) {
+    this.uid = data.UID;
+    this.name = data.Name;
+    this.artists = data.Artists;
+    this.genres = data.Genres;
+    this.year = data.Year;
+    this.images = data.Images;
+}
+
+/**
+ * Gets the uid of the album.
+ * @returns {string}
+ */
+Album.prototype.getUID = function () {
+    return this.uid;
+};
+
+/**
+ * Gets the name of the album.
+ * @returns {string}
+ */
+Album.prototype.getName = function () {
+    return this.name;
+};
+
+/**
+ * Gets a array of artist from this album.
+ * @returns {Artist[]}
+ */
+Album.prototype.getArtists = function () {
+    var result = [];
+    Utils.forEach(this.artist, function (value, key) {
+        result.push(new Artist(value));
+    });
+    return result;
+};
+
+/**
+ * Gets a array of genre from this album.
+ * @returns {Genre[]}
+ */
+Album.prototype.getGenres = function () {
+    var result = [];
+    Utils.forEach(this.genres, function (value, key) {
+        result.push(new Genre(value));
+    });
+    return result;
+};
+
+/**
+ * Gets the publish year of the album.
+ * @returns {integer}
+ */
+Album.prototype.getYear = function () {
+    return this.year;
+};
+
+/**
+ * Gets a array of image from this album.
+ * @returns {Image[]}
+ */
+Album.prototype.getImages = function () {
+    var result = [];
+    Utils.forEach(this.images, function (value, key) {
+        result.push(new Image(value));
+    });
+    return result;
+};
+
+module.exports = Album;
+},{"../utils":6,"./artist":8,"./genre":9,"./image":10}],8:[function(require,module,exports){
+var Utils = require('../utils');
+var Image = require('./image');
+
+function Artist(data) {
+    this.uid = data.UID;
+    this.name = data.Name;
+    this.images = data.Images;
+}
+
+/**
+ * Gets the uid of the artist.
+ * @returns {string}
+ */
+Artist.prototype.getUID = function () {
+    return this.uid;
+};
+
+/**
+ * Gets the name of the artist.
+ * @returns {string}
+ */
+Artist.prototype.getName = function () {
+    return this.name;
+};
+
+/**
+ *  Gets a array of image from this artist.
+ * @returns {Image[]} 
+ */
+Artist.prototype.getImages = function () {
+    var result = [];
+    Utils.forEach(this.images, function (value, key) {
+        result.push(new Image(value));
+    });
+    return result;
+};
+
+module.exports = Artist;
+},{"../utils":6,"./image":10}],9:[function(require,module,exports){
 function Genre (data) {
     this.uid = data.UID;
     this.name = data.Name;
@@ -820,7 +935,7 @@ Genre.prototype.getName = function () {
 };
 
 module.exports = Genre;
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 function Image (data) {
     this.uid = data.UID;
     this.url = data.URL;
@@ -861,7 +976,7 @@ Image.prototype.getWidth = function () {
 };
 
 module.exports = Image;
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var Image = require('./image');
 
 function Location (data) {
@@ -1011,7 +1126,7 @@ Location.prototype.getGPSLongitude = function () {
 };
 
 module.exports = Location;
-},{"./image":8}],10:[function(require,module,exports){
+},{"./image":10}],12:[function(require,module,exports){
 var Utils = require('../utils');
 
 function OffsetObject (data, valueFunc) {
@@ -1055,8 +1170,10 @@ OffsetObject.prototype.getValue = function () {
 };
 
 module.exports = OffsetObject;
-},{"../utils":6}],11:[function(require,module,exports){
+},{"../utils":6}],13:[function(require,module,exports){
 var Utils = require('../utils');
+var Artist = require('./artist');
+var Album = require('./album');
 var Image = require('./image');
 var Genre = require('./genre');
 var User = require('./user');
@@ -1097,7 +1214,7 @@ Track.prototype.getTitle = function () {
  * @returns {string} 
  */
 Track.prototype.getArtist = function () {
-    return this.artist;
+    return new Artist(this.artist);
 };
 
 /**
@@ -1105,7 +1222,7 @@ Track.prototype.getArtist = function () {
  * @returns {string} 
  */
 Track.prototype.getAlbum = function () {
-    return this.album;
+    return new Album(this.album);
 };
 
 /**
@@ -1221,7 +1338,7 @@ Track.prototype.addToLiveplaylist = function (offsetIndex, offsetCount) {
 };
 
 module.exports = Track;
-},{"../utils":6,"./genre":7,"./image":8,"./user":12}],12:[function(require,module,exports){
+},{"../utils":6,"./album":7,"./artist":8,"./genre":9,"./image":10,"./user":14}],14:[function(require,module,exports){
 var Utils = require('../utils');
 var Location = require('./location');
 
@@ -1247,5 +1364,5 @@ User.prototype.getImage = function () {
 };
 
 module.exports = User;
-},{"../utils":6,"./location":9}]},{},[4])(4)
+},{"../utils":6,"./location":11}]},{},[4])(4)
 });
