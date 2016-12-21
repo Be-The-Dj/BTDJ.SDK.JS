@@ -1,0 +1,27 @@
+<html>
+<head>
+
+</head>
+<body>
+    <script src="btdj.sdk.js" type="text/javascript"></script>
+    
+    <script>
+        BTDJ.init({
+            devMode: true,
+            autoLogin: true,
+            clientKey: "Test",
+            clientSecret: "Test"
+        }).then(function () {
+            BTDJ.API.getCurrentUser().then(function (result) {
+                console.log(result);
+            });
+            BTDJ.API.getLiveplaylist().then(function (result) {
+                console.log(result);
+            });
+        }, function () { });
+        //BTDJ.API.OAuth2.getAccessToken();
+        //BTDJ.API.OAuth2.createLogin().showPopup();
+        //console.log(BTDJ.Access);
+    </script>
+</body>
+</html>
