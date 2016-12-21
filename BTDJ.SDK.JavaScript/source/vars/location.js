@@ -12,10 +12,7 @@ function Location (data) {
     this.website = data.Homepage;
     this.facebook = data.Facebook;
     this.twitter = data.Twitter;
-    this.image = data.Image;
-    this.imageBig = data.Image_Big;
     this.checkInCount = data.Checkins;
-    this.playlistCount = data.Playlist_Count;
     this.checkInCode = data.Checkin_Code;
     this.gpsLatitude = data.GPS_Latitude;
     this.gpsLongitude = data.GPS_Longitude;
@@ -107,22 +104,6 @@ Location.prototype.getFacebook = function () {
  */
 Location.prototype.getTwitter = function () {
     return this.twitter;
-};
-
-/**
- * Get the image of the location.
- * @returns {Image} 
- */
-Location.prototype.getImage = function () {
-    return new Image(this.image);
-};
-
-/**
- * Gets the big image of the location.
- * @returns {Image} 
- */
-Location.prototype.getImageBig = function () {
-    return new Image(this.imageBig);
 };
 
 /**

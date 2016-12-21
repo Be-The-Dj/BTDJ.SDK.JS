@@ -7,12 +7,13 @@ var Location = require('./vars/location');
 var Logger = require('./logger');
 var Utils = require('./utils');
 
-const API_RES = 'https://res.btdj.de/';
-const API_RES_DEV = 'https://dev.res.btdj.de/';
+const API_RES = 'https://api.btdj.de/';
+const API_RES_DEV = 'https://dev-api.btdj.de/';
 
 const CTRL_USER = 'api/User';
 const CTRL_LIVEPLAYLIST = 'api/Liveplaylist';
 const CTRL_LOCATION = 'api/Location';
+const CTRL_CHECKIN = 'api/Checkin';
 
 const METHOD_GET = '/Get';
 
@@ -191,23 +192,10 @@ exports.voteForTrack = function (track, offsetIndex, offsetCount) {
 
     return new Promise(function (resolve, reject) {
         var options = {
-            method: 'POST',
-            headers: OAuth2.getAuthorzationHeader(),
-            params: {
-                TrackUID: trackUID,
-                OffsetIndex: Utils.isDefined(offsetIndex) ? offsetIndex : 0,
-                OffsetCount: (Utils.isDefined(offsetCount) && offsetCount != 0) ? offsetCount : DEFAULT_ITEM_COUNT
-            }
+            method: 'PUT',
+            headers: OAuth2.getAuthorzationHeader()
         };
-        Utils.XHR(self.getApiUrl() + CTRL_LIVEPLAYLIST + '/Vote', options).then(function (response) {
-            resolve(new OffsetObject(response, function (value) {
-                var result = [];
-                Utils.forEach(value, function (v, key) {
-                    result.push(new Track(v));
-                });
-                return result;
-            }));
-        }, reject);
+        Utils.XHR(self.getApiUrl() + CTRL_LIVEPLAYLIST + '/Vote_Track/' + trackUID, options).then(resolve, reject);
     });
 };
 
@@ -230,23 +218,10 @@ exports.addTrackToLiveplaylist = function (track, offsetIndex, offsetCount) {
 
     return new Promise(function (resolve, reject) {
         var options = {
-            method: 'PUT',
-            headers: OAuth2.getAuthorzationHeader(),
-            params: {
-                TrackUID: trackUID,
-                OffsetIndex: Utils.isDefined(offsetIndex) ? offsetIndex : 0,
-                OffsetCount: (Utils.isDefined(offsetCount) && offsetCount != 0) ? offsetCount : DEFAULT_ITEM_COUNT
-            }
+            method: 'POST',
+            headers: OAuth2.getAuthorzationHeader()
         };
-        Utils.XHR(self.getApiUrl() + CTRL_LIVEPLAYLIST + '/AddTrack', options).then(function (response) {
-            resolve(new OffsetObject(response, function (value) {
-                var result = [];
-                Utils.forEach(value, function (v, key) {
-                    result.push(new Track(v));
-                });
-                return result;
-            }));
-        }, reject);
+        Utils.XHR(self.getApiUrl() + CTRL_LIVEPLAYLIST + '/Add_Track/' + trackUID, options).then(resolve, reject);
     });
 };
 
@@ -281,72 +256,11 @@ exports.searchTrack = function (term, offsetIndex, offsetCount) {
 };
 
 /**
- * Search locations with the given term.
- * @param {string} term
- * @param {integer} [offsetIndex]
- * @param {integer} [offsetCount]
- * @returns {Promise}
- */
-exports.searchLocation = function (term, offsetIndex, offsetCount) {
-    var self = this;
-
-    return new Promise(function (resolve, reject) {
-        var options = {
-            headers: OAuth2.getAuthorzationHeader(),
-            params: {
-                Term: term,
-                OffsetIndex: Utils.isDefined(offsetIndex) ? offsetIndex : 0,
-                OffsetCount: (Utils.isDefined(offsetCount) && offsetCount != 0) ? offsetCount : DEFAULT_ITEM_COUNT
-            }
-        };
-        Utils.XHR(self.getApiUrl() + CTRL_LOCATION + METHOD_GET, options).then(function (response) {
-            resolve(new OffsetObject(response, function (value) {
-                var result = [];
-                Utils.forEach(value, function (v, key) {
-                    result.push(new Location(v));
-                });
-                return result;
-            }));
-        }, reject);
-    });
-};
-
-/**
- * Check the user in into the given location.
- * @param {string|Location} location
- * @param {string} code
- * @returns {Promise}
- */
-exports.checkIn = function (location, code) {
-    var self = this;
-
-    var locationUID;
-    if (!Utils.isString(location)) {
-        locationUID = location.getUID();
-    } else {
-        locationUID = location;
-    }
-    return new Promise(function (resolve, reject) {
-        var options = {
-            method: 'POST',
-            headers: OAuth2.getAuthorzationHeader(),
-            params: {
-                LocationUID: locationUID,
-                Code: code
-            }
-        };
-        Utils.XHR(self.getApiUrl() + CTRL_LOCATION + '/Checkin', options).then(function (response) {
-            resolve(new Location(response.Location));
-        }, reject);
-    });
-};
-
-/**
  * Check the user in into the location with the given code.
  * @param {string} code
  * @returns {Promise}
  */
-exports.checkInWithCode = function (code) {
+exports.checkIn = function (code) {
     var self = this;
 
     return new Promise(function (resolve, reject) {
@@ -357,7 +271,7 @@ exports.checkInWithCode = function (code) {
                 Code: code
             }
         };
-        Utils.XHR(self.getApiUrl() + CTRL_LOCATION + '/Checkin', options).then(function (response) {
+        Utils.XHR(self.getApiUrl() + CTRL_CHECKIN + '/Create', options).then(function (response) {
             resolve(new Location(response.Location));
         }, reject);
     });
@@ -962,10 +876,7 @@ function Location (data) {
     this.website = data.Homepage;
     this.facebook = data.Facebook;
     this.twitter = data.Twitter;
-    this.image = data.Image;
-    this.imageBig = data.Image_Big;
     this.checkInCount = data.Checkins;
-    this.playlistCount = data.Playlist_Count;
     this.checkInCode = data.Checkin_Code;
     this.gpsLatitude = data.GPS_Latitude;
     this.gpsLongitude = data.GPS_Longitude;
@@ -1057,22 +968,6 @@ Location.prototype.getFacebook = function () {
  */
 Location.prototype.getTwitter = function () {
     return this.twitter;
-};
-
-/**
- * Get the image of the location.
- * @returns {Image} 
- */
-Location.prototype.getImage = function () {
-    return new Image(this.image);
-};
-
-/**
- * Gets the big image of the location.
- * @returns {Image} 
- */
-Location.prototype.getImageBig = function () {
-    return new Image(this.imageBig);
 };
 
 /**
@@ -1332,12 +1227,7 @@ var Location = require('./location');
 
 function User (data) {
     this.username = data.Username;
-    this.firstName = data.Firstname;
-    this.lastName = data.Lastname;
-    this.city = data.City;
-    this.email = data.Email;
     this.image = ((Utils.isDefined(data.Image) || data.Image != null) && data.Image.length > 0) ? data.Image : BTDJ.getDefaultAvatarUrl();
-    this.location = data.Location;
 }
 
 /**
@@ -1349,61 +1239,11 @@ User.prototype.getUsername = function () {
 };
 
 /**
- * Gets the first name of the user.
- * @returns {string} 
- */
-User.prototype.getFirstName = function () {
-    return this.firstName;
-};
-
-/**
- * Gets the last name of the user.
- * @returns {string} 
- */
-User.prototype.getLastName = function () {
-    return this.lastName;
-};
-
-/**
- * Gets the full name of the user.
- * @param {string} [format]
- * @returns {string} 
- */
-User.prototype.getFullName = function (format) {
-    var _format = Utils.isDefined(format) ? format : "{0} {1}";
-    return Utils.formatString(_format, this.firstName, this.lastName);
-}
-
-/**
- * Gets the city name of the user.
- * @returns {string} 
- */
-User.prototype.getCity = function () {
-    return this.city;
-};
-
-/**
- * Gets the email address of the user.
- * @returns {string} 
- */
-User.prototype.getEmail = function () {
-    return this.email;
-};
-
-/**
  * Gets the url to the profile image of the user.
  * @returns {string} 
  */
 User.prototype.getImage = function () {
     return this.image;
-};
-
-/**
- * Gets the checked location of the user.
- * @returns {Location} 
- */
-User.prototype.getLocation = function () {
-    return new Location(this.location);
 };
 
 module.exports = User;
